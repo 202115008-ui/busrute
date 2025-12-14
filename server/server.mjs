@@ -5,6 +5,7 @@ import 'dotenv/config';
 import fetch from 'node-fetch';
 import path from 'path';
 import { fileURLToPath } from 'url';
+import mysql from 'mysql2/promise';
 
 const app = express();
 const PORT = process.env.PORT || 4000;
@@ -24,6 +25,29 @@ app.use(express.json());
 // 0) 테스트용
 app.get('/api/hello', (req, res) => {
   res.json({ ok: true, message: 'API 서버 잘 돌아가는 중!' });
+});
+
+// 1) DB 연결 풀 만들기
+const pool = mysql.createPool({
+  host: process.env.DB_HOST || 'localhost',
+  port: Number(process.env.DB_PORT) || 3306,
+  user: process.env.DB_USER || 'root',
+  password: process.env.DB_PASSWORD || '',
+  database: process.env.DB_NAME || 'busrute',
+  waitForConnections: true,
+  connectionLimit: 10,
+  queueLimit: 0,
+});
+
+// 2) 테스트용 라우트 (서버 + DB 둘 다 확인용)
+app.get('/api/db-test', async (req, res) => {
+  try {
+    const [rows] = await pool.query('SELECT 1 AS result');
+    res.json({ ok: true, db: rows });
+  } catch (err) {
+    console.error('DB Test Error:', err);
+    res.status(500).json({ ok: false, error: String(err) });
+  }
 });
 
 // 1) 대중교통 경로 (ODsay searchPubTransPathT)
@@ -100,3 +124,4 @@ app.get('/{*splat}', (req, res) => {
 app.listen(PORT, () => {
   console.log(`✅ 서버가 http://localhost:${PORT} 에서 실행 중 (프론트 + API)`);
 });
+
