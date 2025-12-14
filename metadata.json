@@ -1,0 +1,7 @@
+{
+  "name": "Smart Transit Assistant",
+  "description": "A comprehensive transit dashboard featuring AI-powered route recommendations, real-time bus tracking, and weather integration.",
+  "requestFramePermissions": [
+    "geolocation"
+  ]
+}
